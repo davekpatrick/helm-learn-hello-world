@@ -1,0 +1,6 @@
+# BOF
+
+ingress:
+  host: hello-world.sandbox.davekpatrick.dev
+
+# EOF
