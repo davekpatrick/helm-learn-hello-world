@@ -22,7 +22,7 @@ jobs:
         version: 'latest'
     - name: Git Show
       run: |
-        git show ${{ github.ref_name }}
+        git show --name-only --oneline HEAD^^..HEAD
 
     - name: Helm Chart
       run: |
