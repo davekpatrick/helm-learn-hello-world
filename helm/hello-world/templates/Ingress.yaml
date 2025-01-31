@@ -12,6 +12,13 @@ spec:
    - host: {{ .Values.ingress.host }}
      http:
        paths:
+       - path: /
+         pathType: ImplementationSpecific
+         backend:
+           service:
+             name: {{ .Release.Name }}
+             port:
+               number: 8080
        - path: /hello-world
          pathType: ImplementationSpecific
          backend:

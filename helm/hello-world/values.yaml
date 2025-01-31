@@ -1,5 +1,12 @@
 # BOF
 
+#
+deployment:
+  replicas: 3
+#
+podDisruptionBudget:
+  minAvailable: 2
+#
 ingress:
   host: hello-world.sandbox.davekpatrick.dev
 
