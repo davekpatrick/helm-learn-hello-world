@@ -17,21 +17,26 @@ jobs:
     # 
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
     - uses: azure/setup-helm@v4
       with:
         version: 'latest'
-    - name: Git Show
+    - name: Git Show ref
       run: |
-        git show --name-only --oneline HEAD^^..HEAD
+        git show --name-only --oneline ${{ github.ref_name }}
+    - name: Git Show sha
+      run: |
+        git show --name-only --oneline ${{ github.sha }}
 
     - name: Helm Chart
       run: |
         cd helm 
         # Get the list of files that have changed
-        git diff-tree --relative --no-commit-id --name-only -r HEAD
+        git diff-tree --relative --no-commit-id --name-only -r ${{ github.sha }}
         
         # Lint all charts
         for chart in $(find . -name Chart.yaml -exec dirname {} \;); do
           echo $chart
           helm lint $chart
-        done
+        donegit show --name-only --oneline
