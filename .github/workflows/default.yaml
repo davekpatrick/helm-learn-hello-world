@@ -20,6 +20,10 @@ jobs:
     - uses: azure/setup-helm@v4
       with:
         version: 'latest'
+    - name: Git Show
+      run: |
+        git show ${{ github.ref_name }}
+
     - name: Helm Chart
       run: |
         cd helm 
