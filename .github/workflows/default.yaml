@@ -24,7 +24,7 @@ jobs:
       run: |
         cd helm 
         # Get the list of files that have changed
-        git diff-tree --relative --no-commit-id --name-only -r ${{ github.ref_name }}...${{ github.sha }} 
+        git diff-tree --relative --no-commit-id --name-only -r ${{ github.ref_name }}
         
         
         # Lint all charts
