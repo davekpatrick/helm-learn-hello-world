@@ -22,8 +22,7 @@ jobs:
         version: 'latest'
     - name: Build Helm Chart
       run: |
-        ls -l
-        pwd
+        cd helm 
         for chart in $(find . -name Chart.yaml -exec dirname {} \;); do
           echo $chart
           helm lint $chart
