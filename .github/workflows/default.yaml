@@ -25,7 +25,7 @@ jobs:
         cd helm 
         # Get the list of files that have changed
         git diff-tree --relative --no-commit-id --name-only -r ${{ github.sha }}
-        git show --pretty="" --name-only ${{ github.sha }}
+        git ls-tree --name-only -r ${{ github.sha }}
         
         # Lint all charts
         for chart in $(find . -name Chart.yaml -exec dirname {} \;); do
