@@ -17,8 +17,6 @@ jobs:
     # 
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 2
     - uses: azure/setup-helm@v4
       with:
         version: 'latest'
@@ -27,7 +25,7 @@ jobs:
         cd helm 
         # Get the list of files that have changed
         git diff-tree --relative --no-commit-id --name-only -r ${{ github.ref_name }}
-        
+        git show --name-only --oneline HEAD
         
         # Lint all charts
         for chart in $(find . -name Chart.yaml -exec dirname {} \;); do
