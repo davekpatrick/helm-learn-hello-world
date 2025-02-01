@@ -30,6 +30,7 @@ jobs:
         updatedFiles=$( git diff-tree --relative --no-commit-id --name-only -r ${{ github.sha }} )
         echo "$updatedFiles"
         updatedCharts=$( echo "$updatedFiles" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
+        echo "$updatedCharts"
         echo "UPDATED_CHARTS=$updatedCharts" >> "$GITHUB_OUTPUT"
     - name: Helm Chart
       run: |
