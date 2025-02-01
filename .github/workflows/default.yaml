@@ -28,8 +28,10 @@ jobs:
         cd helm 
         # Get the list of files that have changed
         updatedFiles=$( git diff-tree --relative --no-commit-id --name-only -r ${{ github.sha }} )
+        echo "Updated files"
         echo "$updatedFiles"
         updatedCharts=$( echo "$updatedFiles" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
+        echo "Updated charts"
         echo "$updatedCharts"
         echo "UPDATED_CHARTS=$updatedCharts" >> "$GITHUB_OUTPUT"
     - name: Helm Chart
