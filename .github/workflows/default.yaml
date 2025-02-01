@@ -37,11 +37,11 @@ jobs:
     - name: Helm Chart
       run: |
         cd helm 
-        # Get the list of files that have changed
+        # List of Charts that have changed
         echo ${{ steps.updated-charts.outputs.UPDATED_CHARTS }}
 
         # Lint all charts
-        for chart in $(echo ${{ steps.updated-charts.outputs.UPDATED_CHARTS }})); do
+        for chart in ${{ steps.updated-charts.outputs.UPDATED_CHARTS }}; do
           echo $chart
           helm lint $chart
         done
