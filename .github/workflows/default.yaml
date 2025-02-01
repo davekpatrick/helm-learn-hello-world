@@ -27,8 +27,9 @@ jobs:
       run: |
         cd helm 
         # Get the list of files that have changed
-        updatedCharts=$( git diff-tree --relative --no-commit-id --name-only -r ${{ github.sha }} )
-        echo "$updatedCharts"
+        updatedFiles=$( git diff-tree --relative --no-commit-id --name-only -r ${{ github.sha }} )
+        echo "$updatedFiles"
+        updatedCharts=$( echo "$updatedFiles" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
         echo "UPDATED_CHARTS=$updatedCharts" >> "$GITHUB_OUTPUT"
     - name: Helm Chart
       run: |
@@ -37,7 +38,7 @@ jobs:
         echo ${{ steps.updated-charts.outputs.UPDATED_CHARTS }}
 
         # Lint all charts
-        for chart in $(find . -name Chart.yaml -exec dirname {} \;); do
+        for chart in $(echo ${{ steps.updated-charts.outputs.UPDATED_CHARTS }})); do
           echo $chart
           helm lint $chart
         done
