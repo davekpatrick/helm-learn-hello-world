@@ -33,7 +33,7 @@ jobs:
         updatedCharts=$( echo "$updatedFiles" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
         echo "Updated charts"
         echo "$updatedCharts"
-        echo "UPDATED_CHARTS=$updatedCharts" >> "$GITHUB_OUTPUT"
+        echo "UPDATED_CHARTS=$(echo $updatedCharts)" >> "$GITHUB_OUTPUT"
     - name: Helm Chart
       run: |
         cd helm 
