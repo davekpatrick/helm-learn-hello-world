@@ -30,18 +30,28 @@ jobs:
         updatedFiles=$( git diff-tree --relative --no-commit-id --name-only -r ${{ github.sha }} )
         echo "Updated files"
         echo "$updatedFiles"
-        updatedCharts=$( echo "$updatedFiles" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
-        echo "Updated charts"
-        echo "$updatedCharts"
-        echo "UPDATED_CHARTS=$(echo $updatedCharts)" >> "$GITHUB_OUTPUT"
+        updatedChartsList=$( echo "$updatedFiles" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
+        if [ -z "$updatedChartsList" ]; then
+          echo "No charts have changed"
+          exit 0
+        else
+          echo "Updated charts"
+          echo "$updatedChartsList"
+          updatedChartsNum=$(echo "$updatedChartsList" | wc -l)
+          echo "Number of updated charts: $updatedChartsNum"
+          # Set the output variables
+          echo "UPDATED_CHARTS_LIST=$(echo $updatedChartsList)" >> "$GITHUB_OUTPUT"
+          echo "UPDATED_CHARTS_COUNT=$(echo $updatedChartsNum)" >> "$GITHUB_OUTPUT"
+        fi
     - name: Helm Chart
+      if: steps.updated-charts.outputs.UPDATED_CHARTS_COUNT != 0
       run: |
         cd helm 
         # List of Charts that have changed
-        echo ${{ steps.updated-charts.outputs.UPDATED_CHARTS }}
-
+        echo ${{ steps.updated-charts.outputs.UPDATED_CHARTS_LIST }}
+        #
         # Lint all charts
-        for chart in ${{ steps.updated-charts.outputs.UPDATED_CHARTS }}; do
+        for chart in ${{ steps.updated-charts.outputs.UPDATED_CHARTS_LIST }}; do
           echo $chart
           helm lint $chart
         done
