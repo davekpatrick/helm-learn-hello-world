@@ -47,11 +47,12 @@ jobs:
       if: steps.updated-charts.outputs.UPDATED_CHARTS_COUNT != 0
       run: |
         cd helm 
-        # List of Charts that have changed
+        # List of charts that have changed
         echo ${{ steps.updated-charts.outputs.UPDATED_CHARTS_LIST }}
-        #
         # Lint all charts
         for chart in ${{ steps.updated-charts.outputs.UPDATED_CHARTS_LIST }}; do
-          echo $chart
+          echo "chart:[${chart}]"
+          # 
+          helm show chart . | grep -E "^version:" | awk '{print $2}'
           helm lint $chart
         done
