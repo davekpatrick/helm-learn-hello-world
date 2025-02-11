@@ -36,7 +36,7 @@ jobs:
           updatedFilesNum=$( echo "$updatedFilesList" | wc -l )
           echo "Number of updated Files: $updatedFilesNum"
           #
-          if [ $ACTIONS_STEP_DEBUG ]; then
+          if [ $ACTIONS_STEP_DEBUG = "true" ]; then
             echo "Updated Files List"
             echo "--------------------------"
             echo "$updatedFilesList"
