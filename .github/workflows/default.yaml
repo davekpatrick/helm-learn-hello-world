@@ -51,15 +51,15 @@ jobs:
       if: steps.updated-files.outputs.UPDATED_FILES_COUNT != 0
       run: |
         cd helm 
-        updatedChartsList=$( echo "${{ steps.updated-charts.outputs.UPDATED_FILES_LIST }}" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
+        updatedChartsList=$( echo "${{ steps.updated-files.outputs.UPDATED_FILES_LIST }}" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
         echo "Number of updated charts: $( echo $updatedChartsList | wc -w )"
         echo $updatedChartsList
         #
-        updatedNonChartFiles=$( echo "${{ steps.updated-charts.outputs.UPDATED_FILES_LIST }}" | grep -v 'Chart.yaml' )
+        updatedNonChartFiles=$( echo "${{ steps.updated-files.outputs.UPDATED_FILES_LIST }}" | grep -v 'Chart.yaml' )
         echo "Number of updated non-chart files: $( echo $updatedNonChartFiles | wc -w )"
         echo $updatedNonChartFiles
         #
-        updatedDirs=$( echo "${{ steps.updated-charts.outputs.UPDATED_FILES_LIST }}" | grep -v 'Chart.yaml' | xargs -n1 dirname | sort -u )
+        updatedDirs=$( echo "${{ steps.updated-files.outputs.UPDATED_FILES_LIST }}" | grep -v 'Chart.yaml' | xargs -n1 dirname | sort -u )
         echo "Number of updated directories: $( echo $updatedDirs | wc -w )"
         echo $updatedDirs
     - name: Helm Chart
