@@ -73,9 +73,9 @@ jobs:
         # 
         for chart in $updatedDirs; do
           echo "Checking if the ${chart} helm chart has been updated"
-          echo $( echo "${updatedChartsList}" | tr " " "\n" )
-          grep --version
-          testWeAlsoHaveAnUpdatedChartFile=$( echo "${updatedChartsList}" | tr " " "\n" | grep "^${chart}$" )
+          echo "${updatedChartsList}" | tr " " "\n"
+          testWeAlsoHaveAnUpdatedChartFile=$( echo "${updatedChartsList}" | tr " " "\n" | grep --regexp="^${chart}$" )
+          echo "testWeAlsoHaveAnUpdatedChartFile:[${testWeAlsoHaveAnUpdatedChartFile}]"
           if [ -n "${testWeAlsoHaveAnUpdatedChartFile}" ]; then
             echo "WARN: The ${chart} helm chart template has been updated but the Chart.yaml file has not been"
           else
