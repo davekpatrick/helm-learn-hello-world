@@ -25,6 +25,7 @@ jobs:
     - name: Locate updated Files
       id: updated-files
       run: |
+        set
         cd helm 
         # Get the list of files that have changed
         updatedFilesList=$( git diff-tree --relative --no-commit-id --name-only -r ${{ github.sha }} )
