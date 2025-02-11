@@ -29,12 +29,12 @@ jobs:
         # Get the list of files that have changed
         updatedFilesList=$( git diff-tree --relative --no-commit-id --name-only -r ${{ github.sha }} )
         if [ -z "$updatedFilesList" ]; then
+          updatedFilesNum=0
           echo "No files have changed"
-          echo "UPDATED_FILES_COUNT=0" >> "$GITHUB_OUTPUT"
           exit 0
         else
           updatedFilesNum=$( echo "$updatedFilesList" | wc -l )
-          echo "Number of updated charts: $updatedChartsNum"
+          echo "Number of updated Files: $updatedFilesNum"
           #
           if [ $ACTIONS_STEP_DEBUG ]; then
             echo "Updated Files List"
