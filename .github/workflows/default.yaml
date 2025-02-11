@@ -24,8 +24,9 @@ jobs:
         version: 'latest'
     - name: Locate updated Files
       id: updated-files
+      env:
+        DEBUG: ${{ runner.debug == '1' && 'true' || 'false' }}
       run: |
-        set
         cd helm 
         # Get the list of files that have changed
         updatedFilesList=$( git diff-tree --relative --no-commit-id --name-only -r ${{ github.sha }} )
@@ -36,12 +37,12 @@ jobs:
         else
           updatedFilesNum=$( echo "$updatedFilesList" | wc -l )
           echo "Number of updated Files: $updatedFilesNum"
-          #
-          if [ $RUNNER_DEBUG -eq 1 ]; then
-            echo "Updated Files List"
-            echo "--------------------------"
-            echo "$updatedFilesList"
-            echo "--------------------------"
+          # Debug output
+          if [ "${DEBUG}" = "true" ]; then
+              echo "Updated Files List"
+              echo "--------------------------"
+              echo "$updatedFilesList"
+              echo "--------------------------"
           fi
           # Set the output variables
           echo "UPDATED_FILES_COUNT=$( echo $updatedFilesNum )" >> "$GITHUB_OUTPUT"
@@ -59,10 +60,10 @@ jobs:
         echo $updatedChartsList
         #
         updatedNonChartFiles=$( echo "${updatedFilesList}" | grep -v 'Chart.yaml' )
-        echo "Number of updated non-chart files: $( echo $updatedNonChartFiles | wc -w )"
+        echo "Number of updated non Chart.yaml files: $( echo $updatedNonChartFiles | wc -w )"
         echo $updatedNonChartFiles
         #
-        updatedDirs=$( echo "${updatedFilesList}" | grep -v 'Chart.yaml' | xargs -n1 dirname | sort -u )
+        updatedDirs=$( echo "${updatedFilesList}" | grep -v 'Chart.yaml' | xargs -n1 awk -F "/" '{print $1}' | sort -u )
         echo "Number of updated directories: $( echo $updatedDirs | wc -w )"
         echo $updatedDirs
     - name: Helm Chart
