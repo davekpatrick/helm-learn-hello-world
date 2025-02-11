@@ -68,18 +68,18 @@ jobs:
         #
         updatedDirs=$( echo "${updatedFilesList}" | grep -v 'Chart.yaml' | xargs -n1 dirname | grep -v 'Chart.yaml' | xargs -n1 dirname | awk -F "/" '{print $1}' | sort -u  )
         echo "Number of updated directories: $( echo $updatedDirs | wc -w )"
-        echo $updatedDirs
-        
+        echo $updatedDirs | tr " " "\n"
         # 
         for chart in $updatedDirs; do
           echo "Checking if the ${chart} helm chart has been updated"
-          echo "${updatedChartsList}" | tr " " "\n"
           testWeAlsoHaveAnUpdatedChartFile=$( echo "${updatedChartsList}" | tr " " "\n" | grep --regexp="^${chart}$" )
           echo "testWeAlsoHaveAnUpdatedChartFile:[${testWeAlsoHaveAnUpdatedChartFile}]"
-          if [ -n "${testWeAlsoHaveAnUpdatedChartFile}" ]; then
+          if [ -z "${testWeAlsoHaveAnUpdatedChartFile}" ]; then
             echo "WARN: The ${chart} helm chart template has been updated but the Chart.yaml file has not been"
+            echo "::warning file=${chart}::The helm chart template has been updated but the Chart.yaml file has not been"
           else
             echo "The ${chart} helm chart and version has been updated"
+            echo "::notice file=${chart}::The helm chart template and Chart.yaml file has been updated"
           fi
         done
         # Set the output variables
