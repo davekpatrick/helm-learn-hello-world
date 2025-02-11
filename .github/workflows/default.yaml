@@ -51,6 +51,8 @@ jobs:
       if: steps.updated-files.outputs.UPDATED_FILES_COUNT != 0
       run: |
         cd helm 
+        echo ${{ steps.updated-files.outputs.UPDATED_FILES_LIST }}
+        #
         updatedChartsList=$( echo "${{ steps.updated-files.outputs.UPDATED_FILES_LIST }}" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
         echo "Number of updated charts: $( echo $updatedChartsList | wc -w )"
         echo $updatedChartsList
