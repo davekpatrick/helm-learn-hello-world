@@ -22,28 +22,46 @@ jobs:
     - uses: azure/setup-helm@v4
       with:
         version: 'latest'
-    - name: Locate updated charts
-      id: updated-charts
+    - name: Locate updated Files
+      id: updated-files
       run: |
         cd helm 
         # Get the list of files that have changed
-        updatedFiles=$( git diff-tree --relative --no-commit-id --name-only -r ${{ github.sha }} )
-        echo "Updated files"
-        echo "$updatedFiles"
-        updatedChartsList=$( echo "$updatedFiles" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
-        if [ -z "$updatedChartsList" ]; then
-          echo "No charts have changed"
-          echo "UPDATED_CHARTS_COUNT=0" >> "$GITHUB_OUTPUT"
+        updatedFilesList=$( git diff-tree --relative --no-commit-id --name-only -r ${{ github.sha }} )
+        if [ -z "$updatedFilesList" ]; then
+          echo "No files have changed"
+          echo "UPDATED_FILES_COUNT=0" >> "$GITHUB_OUTPUT"
           exit 0
         else
-          echo "Updated charts"
-          echo "$updatedChartsList"
-          updatedChartsNum=$( echo "$updatedChartsList" | wc -l )
+          updatedFilesNum=$( echo "$updatedFilesList" | wc -l )
           echo "Number of updated charts: $updatedChartsNum"
+          #
+          if [ $ACTIONS_STEP_DEBUG ]; then
+            echo "Updated Files List"
+            echo "--------------------------"
+            echo "$updatedFilesList"
+            echo "--------------------------"
+          fi
           # Set the output variables
-          echo "UPDATED_CHARTS_COUNT=$(echo $updatedChartsNum)" >> "$GITHUB_OUTPUT"
-          echo "UPDATED_CHARTS_LIST=$(echo $updatedChartsList)" >> "$GITHUB_OUTPUT"
+          echo "UPDATED_FILES_COUNT=$( echo $updatedFilesNum )" >> "$GITHUB_OUTPUT"
+          echo "UPDATED_FILES_LIST=$( echo $updatedFilesList )" >> "$GITHUB_OUTPUT"
         fi
+    - name: Locate updated charts
+      id: updated-charts
+      if: steps.updated-files.outputs.UPDATED_FILES_COUNT != 0
+      run: |
+        cd helm 
+        updatedChartsList=$( echo "${{ steps.updated-charts.outputs.UPDATED_FILES_LIST }}" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
+        echo "Number of updated charts: $( echo $updatedChartsList | wc -w )"
+        echo $updatedChartsList
+        #
+        updatedNonChartFiles=$( echo "${{ steps.updated-charts.outputs.UPDATED_FILES_LIST }}" | grep -v 'Chart.yaml' )
+        echo "Number of updated non-chart files: $( echo $updatedNonChartFiles | wc -w )"
+        echo $updatedNonChartFiles
+        #
+        updatedDirs=$( echo "${{ steps.updated-charts.outputs.UPDATED_FILES_LIST }}" | grep -v 'Chart.yaml' | xargs -n1 dirname | sort -u )
+        echo "Number of updated directories: $( echo $updatedDirs | wc -w )"
+        echo $updatedDirs
     - name: Helm Chart
       if: steps.updated-charts.outputs.UPDATED_CHARTS_COUNT != 0
       run: |
