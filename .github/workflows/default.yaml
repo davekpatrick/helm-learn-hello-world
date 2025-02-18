@@ -81,7 +81,7 @@ jobs:
             echo "::warning file=${chart}::The helm chart template has been updated but the Chart.yaml file has not been"
           else
             echo "The ${chart} helm chart and version has been updated"
-            echo "::notice file=${chart}::The helm chart template and Chart.yaml file has been updated"
+            #echo "::notice file=${chart}::The helm chart template and Chart.yaml file has been updated"
           fi
         done
         # Set the output variables
@@ -99,4 +99,13 @@ jobs:
           # 
           helm show chart ${chart} | grep -E "^version:" | awk '{print $2}'
           helm lint ${chart}
+          rc=$?
+          if [ $rc -ne 0 ]; then
+            echo "ERROR: Helm lint failed for ${chart}"
+            echo "::error file=${chart}::Helm lint failed for ${chart}"
+            exit 1
+          else
+            echo "Helm lint passed for ${chart}"
+            echo "::notice file=${chart}::Helm lint passed for ${chart}"
+          fi
         done
