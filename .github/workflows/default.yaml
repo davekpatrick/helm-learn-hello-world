@@ -55,38 +55,67 @@ jobs:
       if: steps.updated-files.outputs.UPDATED_FILES_COUNT != 0
       run: |
         cd helm 
-        # Get the list of files that have changed
-        updatedFilesList=$( echo ${{ steps.updated-files.outputs.UPDATED_FILES_LIST }} | tr " " "\n" )
-        echo $updatedFilesList
-        #
-        updatedChartsList=$( echo "${updatedFilesList}" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
-        updatedChartCount=$( echo ${updatedChartsList} | wc -w )
-        echo "Number of updated charts: $( echo $updatedChartsList | wc -w )"
-        echo $updatedChartsList
-        #
-        updatedNonChartFiles=$( echo "${updatedFilesList}" | grep -v 'Chart.yaml' )
-        echo "Number of updated non Chart.yaml files: $( echo $updatedNonChartFiles | wc -w )"
-        echo $updatedNonChartFiles
-        #
-        updatedDirs=$( echo "${updatedFilesList}" | grep -v 'Chart.yaml' | xargs -n1 dirname | awk -F "/" '{print $1}' | sort -u  )
-        echo "Number of updated directories: $( echo $updatedDirs | wc -w )"
-        echo $updatedDirs | tr " " "\n"
-        # 
-        for chart in $updatedDirs; do
-          echo "Checking if the ${chart} helm chart has been updated"
-          testWeAlsoHaveAnUpdatedChartFile=$( echo "${updatedChartsList}" | tr " " "\n" | grep --regexp="^${chart}$" )
-          echo "testWeAlsoHaveAnUpdatedChartFile:[${testWeAlsoHaveAnUpdatedChartFile}]"
-          if [ -z "${testWeAlsoHaveAnUpdatedChartFile}" ]; then
-            echo "WARN: The ${chart} helm chart template has been updated but the Chart.yaml file has not been"
-            echo "::warning file=${chart}::The helm chart template has been updated but the Chart.yaml file has not been"
-          else
-            echo "The ${chart} helm chart and version has been updated"
-            #echo "::notice file=${chart}::The helm chart template and Chart.yaml file has been updated"
+          # Get the list of files that have changed
+          updatedFilesList=$( echo ${{ steps.helm-updated-files.outputs.UPDATED_FILES_LIST }} | tr " " "\n" )
+          if [ "${DEBUG}" = "true" ]; then
+            echo $updatedFilesList
           fi
-        done
-        # Set the output variables
-        echo "UPDATED_CHARTS_COUNT=$( echo $updatedChartCount | wc -w )" >> "$GITHUB_OUTPUT"
-        echo "UPDATED_CHARTS_LIST=$( echo $updatedChartsList )" >> "$GITHUB_OUTPUT"
+          # a List of updated Chart.yaml files
+          if [[ $( echo "${updatedFilesList}" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' ) ]] ; then
+              updatedChartsList=$( echo "${updatedFilesList}" | grep 'Chart.yaml' | sed -e 's/\/Chart.yaml//' )
+              updatedChartCount=$( echo "${updatedChartsList}" | wc -w | xargs )
+              if [ "${DEBUG}" = "true" ]; then
+                  echo $updatedChartsList
+              fi
+          else 
+              updatedChartsList=""
+              updatedChartCount=0
+          fi
+          echo "Number of updated Chart.yaml files: ${updatedChartCount}"
+          # a list of all updated files that does not include Chart.yaml files
+          if [[ $( echo "${updatedFilesList}" | grep -v 'Chart.yaml' ) ]] ; then
+              updatedNonChartFiles=$( echo "${updatedFilesList}" | grep -v 'Chart.yaml' )
+              updatedNonChartCount=$( echo "${updatedNonChartFiles}" | wc -w | xargs )
+              if [ "${DEBUG}" = "true" ]; then
+                  echo "${updatedNonChartFiles}"
+              fi
+          else
+              updatedNonChartFiles=""
+              updatedNonChartCount=0
+          fi
+          echo "Number of updated non Chart.yaml files: ${updatedNonChartCount}"
+          # setup chart publishing input variables
+          publishChartCount=0
+          publishChartList=$( echo "${updatedChartsList}" | tr " " "\n" )
+          if [[ "${updatedNonChartCount}" -gt 0 ]] ; then
+              # ensure if a chart includes 
+              updatedDirs=$( echo "${updatedNonChartFiles}" | xargs -n1 dirname | awk -F "/" '{print $1}' | sort -u  )
+              echo "Number of updated directories: $( echo $updatedDirs | wc -w | xargs )"
+              echo $updatedDirs | tr " " "\n"
+              # 
+              for chart in $updatedDirs; do
+                  echo "Validating the ${chart} helm chart also has an updated Chart.yaml file"
+                  testWeAlsoHaveAnUpdatedChartFile=$( echo "${updatedChartsList}" | tr " " "\n" | grep -e "^${chart}$" )
+                  if [ "${DEBUG}" = "true" ]; then
+                      echo "testWeAlsoHaveAnUpdatedChartFile:[${testWeAlsoHaveAnUpdatedChartFile}]"
+                  fi
+                  if [ -z "${testWeAlsoHaveAnUpdatedChartFile}" ]; then
+                      echo "ERROR: The ${chart} helm chart template has been updated but the Chart.yaml file has not been"
+                      echo "::error file=${chart}::The helm chart template has been updated but the Chart.yaml file has not been"
+                      # 
+                      publishChartList=$( echo "${publishChartList}" | grep  -v -e "^${chart}$" )
+                  else
+                      echo "The ${chart} helm chart and version has been updated"
+                      publishChartCount=$( expr $publishChartCount + 1 )
+                  fi
+              done
+          else
+              echo "WARN: Only Chart.yaml files has been updated"
+              echo "::warning file=::Only Chart.yaml files has been updated"
+          fi
+          # Set the output variables
+          echo "UPDATED_CHARTS_COUNT=${publishChartCount}" >> "$GITHUB_OUTPUT"
+          echo "UPDATED_CHARTS_LIST=${publishChartList}" >> "$GITHUB_OUTPUT"
     - name: Helm Chart Publishing
       if: steps.updated-charts.outputs.UPDATED_CHARTS_COUNT != 0
       run: |
